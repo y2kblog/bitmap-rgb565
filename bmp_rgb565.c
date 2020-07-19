@@ -471,8 +471,8 @@ uint8_t *BMP_RGB565_bicubic(uint8_t *pbmpSrc, uint32_t width, uint32_t height)
 /**
   * @brief  Color scale function for thermography.
   * @param  val    Value
-  * @param  maxVal Maximum value (white)
-  * @param  minVal Minimum value (Black)
+  * @param  maxVal Maximum value
+  * @param  minVal Minimum value
   * @param  r	   Pointer to a red   value [0, 255]
   * @param  g	   Pointer to a green value [0, 255]
   * @param  b	   Pointer to a blue  value [0, 255]
@@ -488,6 +488,7 @@ int BMP_RGB565_colorScale(float val, float maxVal, float minVal, uint8_t *r, uin
         return -1;
     }
 
+    // with Black/White
     int32_t ratio_buf = 6.0f * ratio;
     uint8_t col_val = 127.5f * (cosf(6.0f * M_PI * ratio) + 1.0f);	// 127.5 means 255/2
          if (ratio_buf >= 6) {*r = 255;           *g = 255;           *b = 255;         }   // White
@@ -498,6 +499,18 @@ int BMP_RGB565_colorScale(float val, float maxVal, float minVal, uint8_t *r, uin
     else if (ratio_buf >= 1) {*r = 0;             *g = col_val;       *b = 255;         }   // Blue - Sky
     else if (ratio_buf >= 0) {*r = 0;             *g = 0;             *b = 255-col_val; }   // Black - Blue
     else                     {*r = 0;             *g = 0;             *b = 0;           }   // Black
+
+    /*
+    // without Black/White
+    int32_t ratio_buf = 4.0f * ratio;
+    uint8_t col_val = 127.5f * (-cosf(4.0f * M_PI * ratio) + 1.0f);
+         if (ratio_buf >= 4){r = 255;     g = 0;       b = 0;       }   // Red
+    else if (ratio_buf >= 3){r = 255;     g = col_val; b = 0;       }   // Yellow - Red
+    else if (ratio_buf >= 2){r = col_val; g = 255;     b = 0;       }   // Green - Yellow
+    else if (ratio_buf >= 1){r = 0;       g = 255;     b = col_val; }   // Sky - Green
+    else if (ratio_buf >= 0){r = 0;       g = col_val; b = 255;     }   // Blue - Sky
+    else                    {r = 0;       g = 0;       b = 255;     }   // Blue
+    */
 
 	return 0;
 }

@@ -230,9 +230,9 @@ void BMP_RGB565_getPixelRGB(uint8_t *pbmp, uint32_t x, uint32_t y, uint8_t *r, u
 
     uint32_t bytes_per_row = BMP_RGB565_getBytesPerRow(width);
     uint16_t col = BMP_RGB565_read_uint16_t(pbmp + AllHeaderOffset + bytes_per_row * (height - y - 1) + (x << 1));
-    *r = (uint8_t)(col >> 11) << 3;
-    *g = (uint8_t)(col >>  5) << 2;
-    *b = (uint8_t) col        << 3;
+    *r = (uint8_t)(col >> 11) << 3; if(*r == 0xF8) *r = 0xFF;
+    *g = (uint8_t)(col >>  5) << 2; if(*g == 0xFC) *g = 0xFF;
+    *b = (uint8_t) col        << 3; if(*b == 0xF8) *b = 0xFF;
 }
 
 
@@ -420,8 +420,6 @@ uint8_t *BMP_RGB565_resize_bicubic(uint8_t *pbmpSrc, uint32_t width, uint32_t he
 			{
 				for (int j = 0; j <= 3; j++)
 				{
-					
-
 					BMP_RGB565_getPixelRGB(pbmpSrc, RANGE((x - 1) + i, 0, src_x_size-1), RANGE(y - 1 + j, 0, src_y_size-1), &rgb1[0], &rgb1[1], &rgb1[2]);
 					BMP_RGB565_getPixelRGB(pbmpSrc, RANGE((x)     + i, 0, src_x_size-1), RANGE(y - 1 + j, 0, src_y_size-1), &rgb2[0], &rgb2[1], &rgb2[2]);
 					for(int rgb_i = 0; rgb_i < 3; rgb_i++)

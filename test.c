@@ -41,7 +41,7 @@ int main(void)
   fclose(fp);
 
   // Resize image (200pixel x 70pixel)
-  pbmp_resize = BMP_RGB565_bicubic(pbmp, 200, 70);
+  pbmp_resize = BMP_RGB565_resize_bicubic(pbmp, 200, 70);
   if(pbmp_resize == NULL) {
     printf("Failed to create resize image\n");
     return -1;

@@ -11,10 +11,18 @@ extern "C" {
 
 /* Include user header files -------------------------------------------------*/
 /* Exported macro ------------------------------------------------------------*/
+#ifndef COLOR_R
 #define COLOR_R(_C_COLOR_)      (uint8_t)((_C_COLOR_)>>16)
+#endif
+#ifndef COLOR_G
 #define COLOR_G(_C_COLOR_)      (uint8_t)((_C_COLOR_)>>8)
+#endif
+#ifndef COLOR_B
 #define COLOR_B(_C_COLOR_)      (uint8_t)(_C_COLOR_)
+#endif
+#ifndef COL_RGB_SET
 #define COL_RGB_SET(_C_COLOR_)  COLOR_R(_C_COLOR_),COLOR_G(_C_COLOR_),COLOR_B(_C_COLOR_)
+#endif
 
 /* Exported function macro ---------------------------------------------------*/
 /* Exported types ------------------------------------------------------------*/
@@ -38,8 +46,8 @@ extern void      BMP_RGB565_getPixelRGB (uint8_t *, uint32_t, uint32_t, uint8_t 
 extern void      BMP_RGB565_drawLineRGB (uint8_t *, int32_t, int32_t, int32_t, int32_t, uint8_t, uint8_t, uint8_t);
 extern void      BMP_RGB565_drawRectRGB (uint8_t *, uint32_t, uint32_t, uint32_t, uint32_t, uint8_t, uint8_t, uint8_t);
 extern void      BMP_RGB565_fillRGB     (uint8_t *, uint8_t, uint8_t, uint8_t);
-extern void      BMP_RGB565_copy        (uint8_t *, uint8_t *);
-extern uint8_t * BMP_RGB565_bicubic(uint8_t *, uint32_t, uint32_t);
+extern uint8_t * BMP_RGB565_copy(uint8_t *);
+extern uint8_t * BMP_RGB565_resize_bicubic(uint8_t *, uint32_t, uint32_t);
 extern int       BMP_RGB565_colorScale(float, float, float, uint8_t *, uint8_t *, uint8_t *);
 
 #ifdef __cplusplus

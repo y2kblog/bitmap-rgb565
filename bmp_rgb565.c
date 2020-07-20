@@ -15,7 +15,9 @@
 #define M_PI 3.141592653
 #endif
 
+#ifndef RANGE
 #define RANGE(x, min, max)	( (x < min) ? min : (x > max) ? max : x )
+#endif
 
 static const uint32_t FileHeaderSize  = 14; /* = 0x0E */
 static const uint32_t InfoHeaderSize  = 40; /* = 0x28 */
@@ -43,8 +45,8 @@ void      BMP_RGB565_getPixelRGB (uint8_t *, uint32_t, uint32_t, uint8_t *, uint
 void      BMP_RGB565_drawLineRGB (uint8_t *, int32_t, int32_t, int32_t, int32_t, uint8_t, uint8_t, uint8_t);
 void      BMP_RGB565_drawRectRGB (uint8_t *, uint32_t, uint32_t, uint32_t, uint32_t, uint8_t, uint8_t, uint8_t);
 void      BMP_RGB565_fillRGB     (uint8_t *, uint8_t, uint8_t, uint8_t);
-void      BMP_RGB565_copy        (uint8_t *, uint8_t *);
-uint8_t * BMP_RGB565_bicubic(uint8_t *, uint32_t, uint32_t);
+uint8_t * BMP_RGB565_copy(uint8_t *);
+uint8_t * BMP_RGB565_resize_bicubic(uint8_t *, uint32_t, uint32_t);
 int 	  BMP_RGB565_colorScale(float, float, float, uint8_t *, uint8_t *, uint8_t *);
 
 /* Private function prototypes -----------------------------------------------*/
@@ -56,7 +58,6 @@ static void BMP_RGB565_write_uint16_t(uint16_t, uint8_t *);
 static uint32_t BMP_RGB565_getBytesPerRow(uint32_t);
 
 /* Exported functions --------------------------------------------------------*/
-
 /**
   * @brief  Set memory allocation funciton.
   * 		Call only once, before calling any other function from parson API.
@@ -93,8 +94,8 @@ uint8_t *BMP_RGB565_create(uint32_t width, uint32_t height)
 
     // Set header's default values
     uint8_t *tmp = pbmp;
-    *(tmp  +  0) = 0x42;                            // 'B' : Magic number
-    *(tmp  +  1) = 0x4D;                            // 'M' : Magic number
+    *(tmp  +  0) = 'B';                                        // 'B' : Magic number
+    *(tmp  +  1) = 'M';                                        // 'M' : Magic number
     BMP_RGB565_write_uint32_t(data_size        , tmp + 0x02);  // File Size
     BMP_RGB565_write_uint16_t(0                , tmp + 0x06);  // Reserved1
     BMP_RGB565_write_uint16_t(0                , tmp + 0x08);  // Reserved2
@@ -123,7 +124,6 @@ uint8_t *BMP_RGB565_create(uint32_t width, uint32_t height)
 
     return pbmp;
 }
-
 
 /**
   * @brief  Free BMP RGB565 image.
@@ -247,10 +247,10 @@ void BMP_RGB565_getPixelRGB(uint8_t *pbmp, uint32_t x, uint32_t y, uint8_t *r, u
   * @param  g	Green value [0, 255] (Lower 2 bits are ignored)
   * @param  b	Blue  value [0, 255] (Lower 3 bits are ignored)
   * @retval None
+  * @detail Bresenham's line algorithm
+  *         ref : https://rosettacode.org/wiki/Bitmap/Bresenham%27s_line_algorithm#C
+  *         ref : https://ja.wikipedia.org/wiki/%E3%83%96%E3%83%AC%E3%82%BC%E3%83%B3%E3%83%8F%E3%83%A0%E3%81%AE%E3%82%A2%E3%83%AB%E3%82%B4%E3%83%AA%E3%82%BA%E3%83%A0#.E6.9C.80.E9.81.A9.E5.8C.96
   */
-// Bresenham's line algorithm
-// ref : https://rosettacode.org/wiki/Bitmap/Bresenham%27s_line_algorithm#C
-// ref : https://ja.wikipedia.org/wiki/%E3%83%96%E3%83%AC%E3%82%BC%E3%83%B3%E3%83%8F%E3%83%A0%E3%81%AE%E3%82%A2%E3%83%AB%E3%82%B4%E3%83%AA%E3%82%BA%E3%83%A0#.E6.9C.80.E9.81.A9.E5.8C.96
 void BMP_RGB565_drawLineRGB(uint8_t *pbmp,
 		int32_t x0, int32_t y0, int32_t x1, int32_t y1,
         uint8_t r, uint8_t g, uint8_t b)
@@ -358,15 +358,16 @@ void BMP_RGB565_fillRGB(uint8_t *pbmp, uint8_t r, uint8_t g, uint8_t b)
 
 /**
   * @brief  Copy image.
-  * @param  pbmp_Dst pointer to a destination image
-  * @param  pbmp_Src pointer to a source image
-  * @retval None
+  * @param  pbmp pointer to a source image
+  * @retval pointer to the copied image. When error, return NULL
   */
-void BMP_RGB565_copy(uint8_t *pbmp_Dst, uint8_t *pbmp_Src)
+uint8_t *BMP_RGB565_copy(uint8_t *pbmp)
 {
-    uint32_t image_size = BMP_RGB565_getImageSize(pbmp_Src);
-    for(uint32_t i = 0/*AllHeaderOffset*/; i < image_size; i++)
-        *(pbmp_Dst+i) = *(pbmp_Src+i);
+    uint8_t *pbmpDst = BMP_RGB565_create(BMP_RGB565_getWidth(pbmp), BMP_RGB565_getHeight(pbmp));
+    if(pbmpDst == NULL)
+        return NULL;
+    memcpy(pbmpDst, pbmp, BMP_RGB565_getFileSize(pbmp));
+    return pbmpDst;
 }
 
 
@@ -378,7 +379,7 @@ void BMP_RGB565_copy(uint8_t *pbmp_Dst, uint8_t *pbmp_Src)
   * @retval pointer to the created image. When error, return NULL.
   * @detail ref: http://docs-hoffmann.de/bicubic03042002.pdf (p.8)
   */
-uint8_t *BMP_RGB565_bicubic(uint8_t *pbmpSrc, uint32_t width, uint32_t height)
+uint8_t *BMP_RGB565_resize_bicubic(uint8_t *pbmpSrc, uint32_t width, uint32_t height)
 {
 	uint8_t *pbmpDst;
 	int src_x_size, src_y_size, dst_x_size, dst_y_size;

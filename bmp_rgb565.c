@@ -22,7 +22,7 @@
 static const uint32_t FileHeaderSize  = 14; /* = 0x0E */
 static const uint32_t InfoHeaderSize  = 40; /* = 0x28 */
 static const uint32_t BitFieldSize    = 16;
-static const uint32_t AllHeaderOffset = 70; /* FileHeaderSize + InfoHeaderSize + BitFieldSize */
+static const uint32_t AllHeaderOffset = FileHeaderSize + InfoHeaderSize + BitFieldSize;
 
 /* Private types -------------------------------------------------------------*/
 /* Private enum tag ----------------------------------------------------------*/

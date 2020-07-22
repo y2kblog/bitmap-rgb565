@@ -27,6 +27,9 @@ int main(void)
   // Draw green rectangle (10,20) - (30,30)
   BMP_RGB565_drawRectRGB(pbmp, 10, 20, 30, 30, COL_RGB_SET(0x00FF00));
 
+  // Draw text
+  BMP_RGB565_drawTextRGB(pbmp, "ABC", BMP_RGB565_FONT_6X10, 10, 80, COL_RGB_SET(0x0000FF));
+
   // Save image
   fp = fopen("output.bmp", "wb");
   if (fp == NULL) {

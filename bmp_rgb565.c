@@ -19,10 +19,10 @@
 #define RANGE(x, min, max)	( (x < min) ? min : (x > max) ? max : x )
 #endif
 
-static const uint32_t FileHeaderSize  = 14; /* = 0x0E */
-static const uint32_t InfoHeaderSize  = 40; /* = 0x28 */
-static const uint32_t BitFieldSize    = 16;
-static const uint32_t AllHeaderOffset = FileHeaderSize + InfoHeaderSize + BitFieldSize;
+#define BMP_RGB565_FILE_HEADER_SIZE	14	// = 0x0E
+#define BMP_RGB565_INFO_HEADER_SIZE	40	// = 0x28
+#define BMP_RGB565_BIT_FIELD_SIZE	16
+static const uint32_t AllHeaderOffset = BMP_RGB565_FILE_HEADER_SIZE + BMP_RGB565_INFO_HEADER_SIZE + BMP_RGB565_BIT_FIELD_SIZE;
 
 /* Private types -------------------------------------------------------------*/
 /* Private enum tag ----------------------------------------------------------*/
@@ -182,10 +182,10 @@ uint8_t *BMP_RGB565_create(uint32_t width, uint32_t height)
     BMP_RGB565_write_uint16_t(0                , tmp + 0x06);  // Reserved1
     BMP_RGB565_write_uint16_t(0                , tmp + 0x08);  // Reserved2
     BMP_RGB565_write_uint32_t(AllHeaderOffset  , tmp + 0x0A);  // Offset
-    tmp += FileHeaderSize;    // Next
+    tmp += BMP_RGB565_FILE_HEADER_SIZE;    // Next
 
     // Info header
-    BMP_RGB565_write_uint32_t( InfoHeaderSize + BitFieldSize, tmp + 0x00);   // HeaderSize
+    BMP_RGB565_write_uint32_t( BMP_RGB565_INFO_HEADER_SIZE + BMP_RGB565_BIT_FIELD_SIZE, tmp + 0x00);   // HeaderSize
     BMP_RGB565_write_uint32_t( width           , tmp + 0x04);  // width  (*** Signed value ***)
     BMP_RGB565_write_uint32_t( height          , tmp + 0x08);  // height (*** Signed value ***)
     BMP_RGB565_write_uint16_t( 1               , tmp + 0x0C);  // planes
@@ -196,7 +196,7 @@ uint8_t *BMP_RGB565_create(uint32_t width, uint32_t height)
     BMP_RGB565_write_uint32_t( 0               , tmp + 0x1C);  // Y pixels per meter
     BMP_RGB565_write_uint32_t( 0               , tmp + 0x20);  // Color index
     BMP_RGB565_write_uint32_t( 0               , tmp + 0x24);  // Important index
-    tmp += InfoHeaderSize;    // Next
+    tmp += BMP_RGB565_INFO_HEADER_SIZE;    // Next
 
     // Bit field
     BMP_RGB565_write_uint32_t( 0x0000F800      , tmp + 0x00);  // red
@@ -225,7 +225,7 @@ void BMP_RGB565_free(uint8_t *pbmp)
   */
 uint32_t BMP_RGB565_getWidth(uint8_t *pbmp)
 {
-    return BMP_RGB565_read_uint32_t(pbmp + FileHeaderSize + 0x04);
+    return BMP_RGB565_read_uint32_t(pbmp + BMP_RGB565_FILE_HEADER_SIZE + 0x04);
 }
 
 /**
@@ -235,7 +235,7 @@ uint32_t BMP_RGB565_getWidth(uint8_t *pbmp)
   */
 uint32_t BMP_RGB565_getHeight(uint8_t *pbmp)
 {
-    return BMP_RGB565_read_uint32_t(pbmp + FileHeaderSize + 0x08);
+    return BMP_RGB565_read_uint32_t(pbmp + BMP_RGB565_FILE_HEADER_SIZE + 0x08);
 }
 
 /**
@@ -255,7 +255,7 @@ uint32_t BMP_RGB565_getFileSize(uint8_t *pbmp)
   */
 uint32_t BMP_RGB565_getImageSize(uint8_t *pbmp)
 {
-    return BMP_RGB565_read_uint32_t(pbmp + FileHeaderSize + 0x14);
+    return BMP_RGB565_read_uint32_t(pbmp + BMP_RGB565_FILE_HEADER_SIZE + 0x14);
 }
 
 /**
